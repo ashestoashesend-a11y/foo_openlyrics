@@ -220,6 +220,7 @@
     <ClCompile Include="..\src\config\ui_preferences_src_localfiles.cpp" />
     <ClCompile Include="..\src\config\ui_preferences_src_metadatatags.cpp" />
     <ClCompile Include="..\src\config\ui_preferences_upload.cpp" />
+    <ClCompile Include="..\src\config\ui_preferences_translation.cpp" />
     <ClCompile Include="..\src\hash_utils.cpp" />
     <ClCompile Include="..\src\http.cpp" />
     <ClCompile Include="..\src\img_processing.cpp" />
@@ -228,6 +229,7 @@
     <ClCompile Include="..\src\lyric_data.cpp" />
     <ClCompile Include="..\src\lyric_io.cpp" />
     <ClCompile Include="..\src\lyric_metadata.cpp" />
+    <ClCompile Include="..\src\lyric_translate.cpp" />
     <ClCompile Include="..\src\lyric_metadb_index_client.cpp" />
     <ClCompile Include="..\src\lyric_search.cpp" />
     <ClCompile Include="..\src\main.cpp">
@@ -290,6 +292,7 @@
     <ClInclude Include="..\src\lyric_data.h" />
     <ClInclude Include="..\src\lyric_io.h" />
     <ClInclude Include="..\src\lyric_metadata.h" />
+    <ClInclude Include="..\src\lyric_translate.h" />
     <ClInclude Include="..\src\lyric_metadb_index_client.h" />
     <ClInclude Include="..\src\lyric_search.h" />
     <ClInclude Include="..\src\math_util.h" />

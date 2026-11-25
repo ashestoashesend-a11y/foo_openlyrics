@@ -75,6 +75,9 @@
     <ClCompile Include="..\src\lyric_io.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\lyric_translate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\config\config_font.cpp">
       <Filter>Source Files\config</Filter>
     </ClCompile>
@@ -165,6 +168,9 @@
     <ClCompile Include="..\src\config\ui_preferences_upload.cpp">
       <Filter>Source Files\config</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\config\ui_preferences_translation.cpp">
+      <Filter>Source Files\config</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\sources\lyricfind.cpp">
       <Filter>Source Files\sources</Filter>
     </ClCompile>
@@ -216,6 +222,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\lyric_io.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\lyric_translate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\uie_shim_panel.h">

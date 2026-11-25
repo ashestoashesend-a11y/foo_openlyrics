@@ -634,7 +634,8 @@ void ExternalLyricWindow::DrawUntimedLyrics(LyricData& lyrics, D2DTextRenderCont
 
 struct LyricScrollPosition
 {
-    int active_line_index;
+    int active_line_index; // The first line of the active group
+    int active_line_count; // How many consecutive lines share the active timestamp (e.g. original + translation)
     double next_line_scroll_factor; // How far away from the active line (and towards the next line) we should be
                                     // scrolled. Values are in the range [0,1]
 };
@@ -648,14 +649,40 @@ static LyricScrollPosition get_scroll_position(const LyricData& lyrics, double c
         active_line_index++;
     }
 
+    // Lines that share a timestamp are a single visual unit (that is how a translated line is
+    // stored: the original and its translation both carry the same timestamp). Step back to the
+    // first of them and count them all, so the highlight covers the whole unit instead of walking
+    // from the original to the translation as soon as the timestamp passes.
+    while((active_line_index > 0)
+          && (lyrics.LineTimestamp(active_line_index - 1) == lyrics.LineTimestamp(active_line_index)))
+    {
+        active_line_index--;
+    }
+
+    int active_line_count = 0;
+    if(active_line_index >= 0)
+    {
+        active_line_count = 1;
+        while(
+            (active_line_index + active_line_count < lyric_line_count)
+            && (lyrics.LineTimestamp(active_line_index + active_line_count) == lyrics.LineTimestamp(active_line_index)))
+        {
+            active_line_count++;
+        }
+    }
+
+    // Scrolling is timed against the next *distinct* timestamp, otherwise the group would be
+    // scrolled through in zero time.
+    const int next_line_index = (active_line_index < 0) ? 0 : (active_line_index + active_line_count);
+
     const double active_line_time = lyrics.LineTimestamp(active_line_index);
-    const double next_line_time = lyrics.LineTimestamp(active_line_index + 1);
+    const double next_line_time = lyrics.LineTimestamp(next_line_index);
 
     const double scroll_start_time = std::max(active_line_time, next_line_time - scroll_duration);
     const double scroll_end_time = next_line_time;
 
     double next_line_scroll_factor = lerp_inverse_clamped(scroll_start_time, scroll_end_time, current_time);
-    return { active_line_index, next_line_scroll_factor };
+    return { active_line_index, active_line_count, next_line_scroll_factor };
 }
 
 void ExternalLyricWindow::DrawTimestampedLyrics(D2DTextRenderContext& render)
@@ -681,9 +708,10 @@ void ExternalLyricWindow::DrawTimestampedLyrics(D2DTextRenderContext& render)
         {
             text_height_above_active_line += ComputeWrappedLyricLineHeight(render, canvas_size, m_lyrics.lines[i].text);
         }
-        active_line_height = ComputeWrappedLyricLineHeight(render,
-                                                           canvas_size,
-                                                           m_lyrics.lines[scroll.active_line_index].text);
+        for(int i = scroll.active_line_index; i < scroll.active_line_index + scroll.active_line_count; i++)
+        {
+            active_line_height += ComputeWrappedLyricLineHeight(render, canvas_size, m_lyrics.lines[i].text);
+        }
     }
 
     int next_line_scroll = (int)((double)active_line_height * scroll.next_line_scroll_factor);
@@ -694,17 +722,21 @@ void ExternalLyricWindow::DrawTimestampedLyrics(D2DTextRenderContext& render)
     for(int line_index = 0; line_index < lyric_line_count; line_index++)
     {
         const LyricDataLine& line = m_lyrics.lines[line_index];
-        if(line_index == scroll.active_line_index)
+        // Lines sharing the active timestamp -- an original line and its translation -- are
+        // highlighted together so that they light up at the same moment.
+        const int hl_begin = std::max(scroll.active_line_index, 0);
+        const int hl_end = std::max(scroll.active_line_index + scroll.active_line_count, 0); // exclusive
+        if((line_index >= hl_begin) && (line_index < hl_end))
         {
             const t_ui_color colour = lerp(hl_colour, past_text_colour, fade.next_line_scroll_factor);
             render.brush->SetColor(colour_gdi2dx(colour));
         }
-        else if(line_index == scroll.active_line_index + 1)
+        else if(line_index == hl_end)
         {
             const t_ui_color colour = lerp(main_text_colour, hl_colour, fade.next_line_scroll_factor);
             render.brush->SetColor(colour_gdi2dx(colour));
         }
-        else if(line_index < scroll.active_line_index)
+        else if(line_index < hl_begin)
         {
             render.brush->SetColor(colour_gdi2dx(past_text_colour));
         }

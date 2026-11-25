@@ -26,6 +26,19 @@ namespace
         out += "\nChangelog:\n";
         // out += "Version " OPENLYRICS_VERSION " (" __DATE__ "):\n"
         // "\n";
+        out += "Version 1.14.1 (2026-11-25) [fork]:\n"
+               "- Add manually-triggered lyric translation using any OpenAI-compatible API\n"
+               "  - Right-click the lyric panel (or a track -> OpenLyrics) and pick 'Translate lyrics (AI)'\n"
+               "  - Translations are written directly below the original line with the same timestamp, so\n"
+               "    any LRC player shows both and the panel highlights the pair together\n"
+               "  - Lyrics that already contain a translation are detected first, and only the original\n"
+               "    lines are sent again, so a translation is never translated as if it were source text\n"
+               "  - Nothing is saved unless the response covers every line that was sent\n"
+               "- Add a Translation preferences page for the endpoint, API key, model, target language and\n"
+               "  an optional per-line prefix\n"
+               "  - The API key is encrypted for the current Windows user (DPAPI), never stored in plain text\n"
+               "- Translating is not treated as a manual edit, so it is never uploaded to LRCLIB\n"
+               "\n";
         out += "Version 1.14 (2026-11-12):\n"
                "- Remove Musixmatch integration\n"
                "  - This is in response to a request received from Musixmatch themselves.\n"

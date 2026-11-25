@@ -222,6 +222,28 @@ BEGIN
     LTEXT           "Note: Lyric upload is currently experimental and will only be done if are are not yet any lyrics at all on LRCLIB for the track being uploaded and if the lyrics to be uploaded are timestamped.",IDC_STATIC,7,52,307,59
 END
 
+IDD_PREFERENCES_TRANSLATION DIALOGEX 0, 0, 332, 288
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "Microsoft Sans Serif", 400, 0, 0x0
+BEGIN
+    RTEXT           "API endpoint:",IDC_STATIC,7,6,71,11
+    EDITTEXT        IDC_TRANSLATE_API_ENDPOINT,82,4,243,14,ES_AUTOHSCROLL
+    RTEXT           "API key:",IDC_STATIC,7,24,71,11
+    EDITTEXT        IDC_TRANSLATE_API_KEY,82,22,243,14,ES_PASSWORD | ES_AUTOHSCROLL
+    LTEXT           "No key saved yet.",IDC_TRANSLATE_KEY_STATUS,82,39,243,8
+    RTEXT           "Model:",IDC_STATIC,7,54,71,11
+    EDITTEXT        IDC_TRANSLATE_MODEL,82,52,243,14,ES_AUTOHSCROLL
+    RTEXT           "Target language:",IDC_STATIC,7,72,71,11
+    EDITTEXT        IDC_TRANSLATE_LANGUAGE,82,70,243,14,ES_AUTOHSCROLL
+    RTEXT           "Line prefix:",IDC_STATIC,7,90,71,11
+    EDITTEXT        IDC_TRANSLATE_PREFIX,82,88,243,14,ES_AUTOHSCROLL
+    GROUPBOX        "How it works",IDC_STATIC,0,104,331,120
+    LTEXT           "The endpoint must accept OpenAI-compatible chat completions requests. Each translation is written on its own line directly below the original, so any LRC player shows both.",IDC_STATIC,7,118,318,24
+    LTEXT           "Translating is always manual: right-click the lyric panel and choose 'Translate lyrics (AI)'. Lyrics that already have a translation are detected, and only the original lines are sent again.",IDC_STATIC,7,146,318,24
+    LTEXT           "The API key is encrypted for the current Windows user (DPAPI), never stored or logged in plain text, and is only ever sent to the endpoint above. Nothing is saved if the API returns fewer lines than it was given.",IDC_STATIC,7,174,318,36
+END
+
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

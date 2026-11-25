@@ -3,6 +3,7 @@
 #include "logging.h"
 #include "lyric_io.h"
 #include "lyric_metadata.h"
+#include "lyric_translate.h"
 #include "metadb_index_search_avoidance.h"
 #include "metrics.h"
 #include "parsers.h"
@@ -40,6 +41,7 @@ public:
             case cmd_bulksearch_lyrics: out = "Search for lyrics"; break;
             case cmd_manualsearch_lyrics: out = "Search for lyrics (manually)"; break;
             case cmd_edit_lyrics: out = "Edit lyrics"; break;
+            case cmd_translate_lyrics: out = "Translate lyrics (AI)"; break;
             case cmd_mark_instrumental: out = "Mark as instrumental"; break;
             default: uBugCheck();
         }
@@ -61,6 +63,7 @@ public:
                 case cmd_show_lyrics:
                 case cmd_manualsearch_lyrics:
                 case cmd_edit_lyrics:
+                case cmd_translate_lyrics:
                 {
                     out_display_flags = contextmenu_item_simple::FLAG_DISABLED_GRAYED;
                 }
@@ -201,10 +204,34 @@ public:
             }
             break;
 
+            case cmd_translate_lyrics:
+            {
+                if(data.get_count() == 0) break;
+                metadb_handle_ptr track = data.get_item(0);
+
+                const auto async_load = [track](threaded_process_status& /*status*/, abort_callback& abort)
+                {
+                    const metadb_v2_rec_t track_info = get_full_metadata(track);
+                    LyricSearchHandle handle(LyricUpdate::Type::InternalSearch, track, track_info, abort);
+                    io::search_for_lyrics(handle, true);
+                    const bool found = handle.wait_for_complete(30'000) && handle.has_result();
+                    LyricData lyrics = found ? handle.get_result() : LyricData {};
+
+                    fb2k::inMainThread2([track, track_info, lyrics = std::move(lyrics)]() mutable
+                                        { SpawnLyricTranslation(std::move(lyrics), track, track_info); });
+                };
+
+                threaded_process::g_run_modeless(threaded_process_callback_lambda::create(async_load),
+                                                 threaded_process::flag_show_delayed
+                                                     | threaded_process::flag_show_abort,
+                                                 core_api::get_main_window(),
+                                                 "Reading saved lyrics...");
+            }
+            break;
+
             case cmd_mark_instrumental:
             {
                 metrics::log_used_mark_instrumental();
-
                 size_t track_count = data.get_count();
                 std::string msg;
                 if(track_count == 1)
@@ -341,6 +368,7 @@ public:
         static const GUID GUID_ITEM_BULKSEARCH_LYRICS = { 0x16d008, 0x83ec, 0x4d0a, { 0x9a, 0x1a, 0x9e, 0xae, 0xc8, 0x24, 0x2, 0x5d } };
         static const GUID GUID_ITEM_MANUALSEARCH_LYRICS = { 0x9fac3e8e, 0xa847, 0x4b73, { 0x90, 0xe4, 0xc9, 0x5, 0x49, 0xf9, 0xe9, 0x32 } };
         static const GUID GUID_ITEM_EDIT_LYRICS = { 0x518d992d, 0xd61b, 0x4cfd, { 0x8f, 0xcf, 0x8c, 0x7f, 0x21, 0xd0, 0x59, 0x2c } };
+        static const GUID GUID_ITEM_TRANSLATE_LYRICS = { 0x6e2a71d4, 0xc3b8, 0x4f09, { 0xba, 0x15, 0x2c, 0x8d, 0x70, 0x93, 0x5e, 0x41 } };
         static const GUID GUID_ITEM_MARK_INSTRUMENTAL = { 0x23b658fc, 0x71e1, 0x4e3c, { 0x87, 0xe0, 0xb, 0x34, 0x8c, 0x26, 0x3f, 0x59 } };
         // clang-format on
 
@@ -350,6 +378,7 @@ public:
             case cmd_bulksearch_lyrics: return GUID_ITEM_BULKSEARCH_LYRICS;
             case cmd_manualsearch_lyrics: return GUID_ITEM_MANUALSEARCH_LYRICS;
             case cmd_edit_lyrics: return GUID_ITEM_EDIT_LYRICS;
+            case cmd_translate_lyrics: return GUID_ITEM_TRANSLATE_LYRICS;
             case cmd_mark_instrumental: return GUID_ITEM_MARK_INSTRUMENTAL;
             default: uBugCheck();
         }
@@ -367,6 +396,9 @@ public:
                 out = "Search for lyrics for this track with customisable search terms and multiple results";
                 return true;
             case cmd_edit_lyrics: out = "Open the lyric editor with the lyrics for this track"; return true;
+            case cmd_translate_lyrics:
+                out = "Translate the saved lyrics with the configured AI API and store the translation under each line";
+                return true;
             case cmd_mark_instrumental:
                 out = "Remove existing lyrics and skip future automated lyric searches";
                 return true;
@@ -381,6 +413,7 @@ private:
         cmd_bulksearch_lyrics,
         cmd_manualsearch_lyrics,
         cmd_edit_lyrics,
+        cmd_translate_lyrics,
         cmd_mark_instrumental,
         cmd_total
     };

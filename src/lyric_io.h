@@ -14,6 +14,8 @@ struct LyricUpdate
         InternalSearch, // The result of a search initiated by and for the internal working of openlyrics, transparent
                         // to the user
         Edit, // The result of an edit by the user
+        Translate, // Machine translation of the existing lyrics: saved like an edit, but never
+                   // treated as a user edit (so it is never published to any lyric source)
     };
 
     LyricData lyrics;

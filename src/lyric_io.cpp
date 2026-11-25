@@ -603,7 +603,8 @@ static bool should_lyric_update_be_saved(bool loaded_from_local_src,
     const bool should_autosave = ((update_type == LyricUpdate::Type::AutoSearch) && is_configured_to_autosave
                                   && !loaded_from_local_src);
 
-    const bool is_a_user_edit = (update_type == LyricUpdate::Type::Edit);
+    const bool is_a_user_edit = (update_type == LyricUpdate::Type::Edit)
+                                || (update_type == LyricUpdate::Type::Translate);
     const bool user_requested_search = ((update_type == LyricUpdate::Type::ManualSearch) && !loaded_from_local_src);
 
     // NOTE: We previously changed this to:
@@ -622,6 +623,7 @@ static bool should_lyric_update_be_saved(bool loaded_from_local_src,
 static bool save_overwrite_allowed(LyricUpdate::Type update_type)
 {
     const bool allow_overwrite = (update_type == LyricUpdate::Type::Edit)
+                                 || (update_type == LyricUpdate::Type::Translate)
                                  || (update_type == LyricUpdate::Type::ManualSearch);
     return allow_overwrite;
 }

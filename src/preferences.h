@@ -184,4 +184,14 @@ namespace preferences
     {
         UploadStrategy lrclib_upload_strategy();
     }
+
+    namespace translation
+    {
+        std::string api_endpoint();
+        std::string model();
+        std::string target_language();
+        std::string line_prefix();
+        std::string api_key(); // Decrypted with DPAPI; empty if no key has been saved
+        bool has_api_key();
+    }
 }
